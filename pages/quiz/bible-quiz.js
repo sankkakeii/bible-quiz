@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ResultsComponent from '@/components/ResultsComponent';
 import { Button } from '@/components/ui/button';
-import bibleQuestions from './demo-questions';
+import bibleQuestions from '@/lib/demo-questions';
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
