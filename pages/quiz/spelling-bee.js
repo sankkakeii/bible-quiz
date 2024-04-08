@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import ResultsComponent from '@/components/ResultsComponent';
 import { Button } from '@/components/ui/button';
-import bibleQuestions from '@/lib/demo-questions';
+import bibleQuestions from '@/lib/demo-questions_spelling';
 import { Inter } from "next/font/google";
+import { Input } from '@/components/ui/input';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -130,16 +131,13 @@ export default function BibleQuiz() {
                                     <h1 className="quiz-text text-lg md:text-3xl font-semibold py-6 text-teal-600">Listen and type what you hear</h1>
                                     <audio controls>
                                         <source src={currentQuestion.audioSrc} type="audio/mpeg" />
-                                        Your browser does not support the audio element.
-                                    </audio>
-                                    <input
-                                        type="text"
-                                        value={currentQuestion.typedAnswer}
-                                        onChange={(e) => handleAnswerSelect(e.target.value)}
-                                        className="border-2 w-1/2 border-gray-400 p-2 rounded-lg outline-none focus:border-green-500"
-                                    />
-                                </div>
-                            </>
+                                            Your browser does not support the audio element.
+                                        </audio>
+
+                                        {/* <Input className="border-2 w-1/2 border-gray-400 p-2 rounded-lg outline-none focus:border-green-500" id="areaZone" placeholder="What do you hear?" /> */}
+                                        <Input className="border-2 w-1/2 border-gray-400 p-2 rounded-lg outline-none focus:border-green-500" id="areaZone" placeholder="What do you hear?" />
+                                    </div>
+                                </>
                         ) : null}
                         <div className="flex gap-6 justify-center items-center">
                             <Button className="next-button bg-gray-500 text-white py-4 md:py-4 px-6 md:px-12 rounded-md mt-4" onClick={handlePreviousQuestion}>
