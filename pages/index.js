@@ -23,7 +23,7 @@ export default function Home() {
           localStorage.setItem('bible_fullName', fullName);
           localStorage.setItem('bible_dob', dob);
           localStorage.setItem('bible_areaZone', areaZone);
-          router.push('/quiz/bible-quiz')
+          router.push('/instructions')
       } catch {
           console.error("Failed to store data")
       }
