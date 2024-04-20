@@ -11,6 +11,7 @@ export default function Home() {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState(null);
+  const [category, setCategory] = useState(null);
 
   const handleNextClicked = async () => {
     setLoading(true); // Set loading state to true
@@ -46,6 +47,7 @@ export default function Home() {
         let dataResponse = await response.json();
         console.log(dataResponse)
         setToken(dataResponse.data.data.token);
+        setCategory(dataResponse.data.data.user.category);
         setSuccess(dataResponse.data.message);
         router.push('/instructions');
       }
@@ -59,10 +61,11 @@ export default function Home() {
 
 
   useEffect (() => {
-    if(token) {
+    if(token && category) {
       localStorage.setItem('token', token);
+      localStorage.setItem('category', category);
     }
-  }, [token]);
+  }, [token, category]);
 
   console.log(token);
 
