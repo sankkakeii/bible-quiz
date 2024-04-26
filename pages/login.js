@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import Link from 'next/link';
 
 export default function Login() {
     const router = useRouter();
@@ -73,10 +74,13 @@ export default function Login() {
                             <Input id="password" placeholder="Password" type="password" className="w-full" />
                         </div>
                         <Button onClick={handleLoginClicked} className={`login-button bg-green-500 text-white py-4 md:py-6 px-6 md:px-12 rounded-md mt-4 md:mt-8 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-                            <div className="flex items-center justify-center w-full">
-                                {loading ? <Spinner /> : 'LOGIN'}
+                            <div className="flex items-center w-full justify-center">
+                                {/* {loading && <Spinner />} */}
+                                {loading && 'LOADING'}
+                                {!loading && 'LOGIN'}
                             </div>
                         </Button>
+                        <Link href="/" className="text-lg text-zinc-500 underline-offset-4 hover:underline">register</Link>
                         {error && <p className="text-red-500">{error}</p>}
                     </div>
                 </Card>
