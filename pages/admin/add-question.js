@@ -224,7 +224,7 @@ export default function AddQuestionForm({ onSubmit }) {
                 method: "POST",
                 body: formData
             });
-            
+
             if (response.ok) {
                 // Do something with the response if needed
                 console.log("Question uploaded successfully!");
