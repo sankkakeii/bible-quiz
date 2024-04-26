@@ -1,8 +1,8 @@
 export default async function handler(req, res) {
     if (req.method === 'POST') {
         try {
-            const { name, dob, zone, category } = req.body;
-            let to_take = 'multichoice';
+            const { name, dob, zone, category,  quizType } = req.body;
+            let to_take = quizType;
 
             // Construct the data object to send to the external endpoint
             const dataToSend = {

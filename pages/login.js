@@ -36,13 +36,13 @@ export default function Login() {
 
             const responseData = await response.json();
 
-            // console.log('RESPONSE DATA:::::::::::', responseData)
+            console.log('RESPONSE DATA:::::::::::', responseData)
 
             // Assuming the token is returned in responseData.data.token
             const token = responseData.data.data.token;
             if (token) {
                 localStorage.setItem('token', token);
-                router.push('/instructions');
+                // router.push('/instructions');
             } else {
                 throw new Error('Token not found in response');
             }

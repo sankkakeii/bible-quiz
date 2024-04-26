@@ -24,6 +24,7 @@ export default function Home() {
     const dob = document.getElementById('dob').value;
     const zone = document.getElementById('areaZone').value;
     const selectedCategory = document.getElementById('category').value;
+    const quizType = document.getElementById('quizType').value;
 
     const data = {
       name,
