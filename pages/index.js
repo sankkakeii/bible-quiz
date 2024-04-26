@@ -13,6 +13,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState(null);
   const [category, setCategory] = useState(null);
+  const [quizType, setQuizType] = useState('multichoice'); // Default value set to multichoice
 
   const handleNextClicked = async () => {
     setLoading(true); // Set loading state to true
@@ -22,13 +23,14 @@ export default function Home() {
     const name = document.getElementById('fullName').value;
     const dob = document.getElementById('dob').value;
     const zone = document.getElementById('areaZone').value;
-    const category = document.getElementById('category').value;
+    const selectedCategory = document.getElementById('category').value;
 
     const data = {
       name,
       dob,
       zone,
-      category
+      category: selectedCategory,
+      quizType // Include the selected quiz type in the data
     };
 
     try {
@@ -59,7 +61,6 @@ export default function Home() {
       setLoading(false); // Set loading state to false regardless of success or failure
     }
   };
-
 
   useEffect (() => {
     if(token && category) {
@@ -96,11 +97,18 @@ export default function Home() {
                 <option value="teens">Teens</option>
               </select>
             </div>
+            <div className="text-left">
+              <label>Quiz Type</label>
+              <select id="quizType" value={quizType} onChange={(e) => setQuizType(e.target.value)} className="w-full p-2 border rounded-md mt-1 border-gray-300 shadow">
+                <option value="multichoice">Quiz</option>
+                <option value="audio">Spelling Bee</option>
+              </select>
+            </div>
             <Button onClick={handleNextClicked} className={`next-button bg-green-500 text-white py-4 md:py-6 px-6 md:px-12 rounded-md mt-4 md:mt-8 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-                <div className="flex items-center justify-center w-full">
-                  {/* {loading ? <Spinner /> : 'NEXT'} */}
-                  {loading ? 'LOADING' : 'NEXT'}
-                </div>
+              <div className="flex items-center justify-center w-full">
+                {/* {loading ? <Spinner /> : 'NEXT'} */}
+                {loading ? 'LOADING' : 'NEXT'}
+              </div>
             </Button>
             <Link href="/login" className="text-lg text-zinc-500 underline-offset-4 hover:underline">login</Link>
             {error && <p className="text-red-500">{error}</p>}

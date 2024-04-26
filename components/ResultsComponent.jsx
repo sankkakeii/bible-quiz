@@ -16,7 +16,7 @@ export default function ResultsComponent({ score, correctAnswers, totalQuestions
 
     if (questionType === 'multichoice') {
         buttonText = 'Proceed to Spelling Bee';
-        buttonAction = () => router.push('/spelling-instructions');
+        buttonAction = () => router.push('/');
     }
 
     return (
