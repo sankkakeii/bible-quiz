@@ -98,7 +98,7 @@ export default function Home() {
               </select>
             </div>
             <div className="text-left">
-              <label>Quiz Type</label>
+              <label>Competition Type</label>
               <select id="quizType" value={quizType} onChange={(e) => setQuizType(e.target.value)} className="w-full p-2 border rounded-md mt-1 border-gray-300 shadow">
                 <option value="multichoice">Quiz</option>
                 <option value="audio">Spelling Bee</option>

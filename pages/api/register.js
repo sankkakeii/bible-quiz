@@ -2,13 +2,15 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
         try {
             const { name, dob, zone, category } = req.body;
+            let to_take = 'multichoice';
 
             // Construct the data object to send to the external endpoint
             const dataToSend = {
                 name,
                 dob,
                 zone,
-                category
+                category,
+                to_take
             };
 
             // Make a POST request to the external endpoint
