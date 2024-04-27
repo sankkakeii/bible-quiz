@@ -42,7 +42,7 @@ export default function Login() {
             const responseData = await response.json();
             setLoginData(JSON.stringify(responseData));
 
-            console.log('RESPONSE DATA:::::::::::', responseData)
+            // console.log('RESPONSE DATA:::::::::::', responseData)
 
             // Assuming the token is returned in responseData.data.token
             const token = responseData.data.data.token;

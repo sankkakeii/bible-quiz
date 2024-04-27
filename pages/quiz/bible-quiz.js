@@ -11,7 +11,7 @@ export default function BibleQuiz() {
     const [timer, setTimer] = useState(1200); // 20 minutes
     const [randomizedQuestions, setRandomizedQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [userAnswers, setUserAnswers] = useState(Array(10).fill(null)); // Assuming 10 questions
+    const [userAnswers, setUserAnswers] = useState([]); // Assuming 10 questions
     const [token, setToken] = useState('');
     const router = useRouter();
 
