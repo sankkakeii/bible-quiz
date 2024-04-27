@@ -140,7 +140,7 @@ export default function SpellingBeeQuiz() {
                         <>
                             <div className="w-full flex flex-col gap-6 items-center justify-center">
                                 <h1 className="quiz-text text-lg md:text-3xl font-semibold py-6 text-teal-600">Listen and type what you hear</h1>
-                                <audio ref={audioRef} controls>
+                                <audio ref={audioRef} controls loop>
                                     <source src={currentQuestion.question} type="audio/mp3" />
                                     Your browser does not support the audio element.
                                 </audio>
