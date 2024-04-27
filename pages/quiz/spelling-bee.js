@@ -1,20 +1,23 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ResultsComponent from '@/components/ResultsComponent';
 import { Button } from '@/components/ui/button';
-import { Inter } from "next/font/google";
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/router';
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function SpellingBeeQuiz() {
     const [showResultPage, setShowResultPage] = useState(false);
     const [timer, setTimer] = useState(1200); // 20 minutes
-    const [randomizedQuestions, setRandomizedQuestions] = useState([]);
-    const [currentQuestion, setCurrentQuestion] = useState(null);
+    const [fetchedQuestions, setFetchedQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [userAnswers, setUserAnswers] = useState(Array(10).fill('')); // Assuming 10 questions and initializing with empty strings
+    const [userAnswers, setUserAnswers] = useState(Array(10).fill(''));
+    const [correctAnswer, setCorrectAnswer] = useState('');
+    const [correctAnswersObject, setCorrectAnswersObject] = useState({
+        "category": "teens",
+        "question_type": "audio",
+        "answers": []
+    });
     const [token, setToken] = useState('');
+    const [correctAnswers, setCorrectAnswers] = useState(0); // Track correct answers
     const audioRef = useRef(null); // Reference to the audio element
     const router = useRouter();
 
@@ -42,31 +45,25 @@ export default function SpellingBeeQuiz() {
 
         // Fetch questions from the API endpoint
         fetchQuestions();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     useEffect(() => {
-        if (randomizedQuestions.length > 0) {
-            setCurrentQuestion(randomizedQuestions[currentQuestionIndex]);
-            // Reset audio player when the current question changes
-            if (audioRef.current) {
-                audioRef.current.load();
-            }
+        if (fetchedQuestions.length > 0) {
+            // Load the current question audio when questions are fetched
+            loadCurrentQuestionAudio();
         }
-    }, [randomizedQuestions, currentQuestionIndex]);
+    }, [fetchedQuestions]);
 
     const fetchQuestions = async () => {
         try {
-            // Fetch question type and category from local storage
             const questionType = 'audio';
             const category = 'teens';
 
-            // Fetch questions from the API endpoint
             const response = await fetch('https://sub-engine.fintecgrate.com/api/jgc/questions/retrieve', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // Include token in the headers
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     question_type: questionType,
@@ -79,58 +76,110 @@ export default function SpellingBeeQuiz() {
             }
 
             const data = await response.json();
-            setRandomizedQuestions(data.data.questions);
+            setFetchedQuestions(data.data.questions);
         } catch (error) {
             console.error('Error fetching questions:', error);
             // Handle error
         }
     };
 
-    const handleNextQuestion = () => {
-        if (currentQuestionIndex < randomizedQuestions.length - 1) {
-            setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+    const loadCurrentQuestionAudio = (index = currentQuestionIndex) => {
+        const currentQuestion = fetchedQuestions[index];
+        if (currentQuestion && audioRef.current) {
+            audioRef.current.src = currentQuestion.question;
+            audioRef.current.load();
         }
+    };
+
+    const handleNextQuestion = () => {
+        setCurrentQuestionIndex(prevIndex => {
+            if (prevIndex < fetchedQuestions.length - 1) {
+                const currentQuestion = fetchedQuestions[prevIndex];
+                const userAnswer = correctAnswer;
+                const isCorrect = currentQuestion.correct_answer.toLowerCase() === userAnswer.toLowerCase();
+
+                currentQuestion.userAnswer = correctAnswer;
+                currentQuestion.isCorrect = isCorrect;
+
+                const isQuestionAlreadyAnswered = correctAnswersObject.answers.some(answer => answer.id === currentQuestion.id);
+
+                if (!isQuestionAlreadyAnswered) {
+                    setCorrectAnswersObject(prevObject => ({ ...prevObject, answers: [...prevObject.answers, currentQuestion] }));
+                }
+
+                const newIndex = prevIndex + 1;
+                loadCurrentQuestionAudio(newIndex);
+                return newIndex;
+            } else {
+                const userAnswer = correctAnswer;
+                const isCorrect = currentQuestion.correct_answer.toLowerCase() === userAnswer.toLowerCase();
+
+                currentQuestion.userAnswer = correctAnswer;
+                currentQuestion.isCorrect = isCorrect;
+
+                const isQuestionAlreadyAnswered = correctAnswersObject.answers.some(answer => answer.id === currentQuestion.id);
+
+                if (!isQuestionAlreadyAnswered) {
+                    setCorrectAnswersObject(prevObject => ({ ...prevObject, answers: [...prevObject.answers, currentQuestion] }));
+                }
+
+                console.log("You have reached the end of the quiz.");
+                return prevIndex;
+            }
+        });
     };
 
     const handlePreviousQuestion = () => {
         if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(prevIndex => prevIndex - 1);
+            setCurrentQuestionIndex(prevIndex => {
+                const newIndex = prevIndex - 1;
+                loadCurrentQuestionAudio(newIndex);
+                return newIndex;
+            });
         }
     };
 
-    const handleAnswerChange = (event) => {
+    const handleAnswerChange = event => {
         const { value } = event.target;
         const updatedUserAnswers = [...userAnswers];
-        updatedUserAnswers[currentQuestionIndex] = value.toLowerCase(); // Convert to lowercase before storing
+        updatedUserAnswers[currentQuestionIndex] = value.toLowerCase();
         setUserAnswers(updatedUserAnswers);
+        setCorrectAnswer(value.toLowerCase());
     };
 
-    const handleSubmitQuestion = async () => {
-        // Logic for handling question submission
-        // Here you can compare user answers with correct answers and calculate score
+    const handleSubmitQuestion = () => {
+        const userScore = correctAnswersObject.answers.reduce((score, answer) => {
+            if (answer.isCorrect) {
+                return score + 1;
+            } else {
+                return score;
+            }
+        }, 0);
+
+        setCorrectAnswers(userScore);
+        setShowResultPage(true);
     };
 
     if (showResultPage) {
-        // Pass props to ResultsComponent
-        return <ResultsComponent score={0} correctAnswers={0} totalQuestions={randomizedQuestions.length} questionType="audio" />;
+        return <ResultsComponent score={correctAnswers} correctAnswers={correctAnswers} totalQuestions={fetchedQuestions.length} questionType="audio" />;
     }
 
-    // Convert timer to minutes and seconds
     const minutes = Math.floor(timer / 60);
     const seconds = timer % 60;
     const formattedTimer = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-    // Check if currentQuestion exists before rendering
-    if (!currentQuestion) {
-        return null; // Or render a loading indicator
+    if (!fetchedQuestions.length) {
+        return null;
     }
 
+    const currentQuestion = fetchedQuestions[currentQuestionIndex];
+
     return (
-        <main className={`flex min-h-screen flex-col items-center justify-center pt-24${inter.className}`} style={{ backgroundImage: 'url(/images/flat-mountains.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+        <main className="flex min-h-screen flex-col items-center justify-center pt-24" style={{ backgroundImage: 'url(/images/flat-mountains.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
             <div className="flex justify-center gap-6 items-center w-full px-10">
                 <div className="flex flex-col w-full md:w-3/4 lg:w-1/2 justify-center items-center text-center bg-white rounded-lg shadow-xl">
                     <div className="header-container flex gap-5 w-full rounded-t-lg">
-                        <div className={`timer w-full h-32 rounded-t-lg ${inter.className}`} style={{ backgroundImage: 'url(/images/repeating-chevrons.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+                        <div className="timer w-full h-32 rounded-t-lg" style={{ backgroundImage: 'url(/images/repeating-chevrons.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
                             <div className="w-full flex items-center justify-center">
                                 <div className="text-4xl mt-10 text-white font-bold">{formattedTimer}</div>
                             </div>
@@ -139,8 +188,8 @@ export default function SpellingBeeQuiz() {
                     <div className="quiz-container w-full p-4 md:p-8">
                         <>
                             <div className="w-full flex flex-col gap-6 items-center justify-center">
-                                <h1 className="quiz-text text-lg md:text-3xl font-semibold py-6 text-teal-600">Listen and type what you hear</h1>
-                                <audio ref={audioRef} controls loop>
+                                <h1 className="quiz-text text-lg md:text-3xl font-semibold py-6 text-teal-600">Listen and type what you hear, take your time</h1>
+                                <audio ref={audioRef} controls>
                                     <source src={currentQuestion.question} type="audio/mp3" />
                                     Your browser does not support the audio element.
                                 </audio>
@@ -171,3 +220,4 @@ export default function SpellingBeeQuiz() {
         </main>
     );
 }
+
