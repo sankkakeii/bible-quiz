@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ResultsComponent from '@/components/ResultsComponent';
 import { Button } from '@/components/ui/button';
 import { Inter } from "next/font/google";
@@ -10,12 +10,12 @@ const inter = Inter({ subsets: ["latin"] });
 export default function SpellingBeeQuiz() {
     const [showResultPage, setShowResultPage] = useState(false);
     const [timer, setTimer] = useState(1200); // 20 minutes
-    const [questionsPool, setQuestionsPool] = useState(null);
     const [randomizedQuestions, setRandomizedQuestions] = useState([]);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState(null);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [userAnswers, setUserAnswers] = useState(Array(10).fill('')); // Assuming 10 questions and initializing with empty strings
     const [token, setToken] = useState('');
+    const audioRef = useRef(null); // Reference to the audio element
     const router = useRouter();
 
     useEffect(() => {
@@ -46,8 +46,12 @@ export default function SpellingBeeQuiz() {
     }, [token]);
 
     useEffect(() => {
-        if (randomizedQuestions) {
+        if (randomizedQuestions.length > 0) {
             setCurrentQuestion(randomizedQuestions[currentQuestionIndex]);
+            // Reset audio player when the current question changes
+            if (audioRef.current) {
+                audioRef.current.load();
+            }
         }
     }, [randomizedQuestions, currentQuestionIndex]);
 
@@ -55,13 +59,7 @@ export default function SpellingBeeQuiz() {
         try {
             // Fetch question type and category from local storage
             const questionType = 'audio';
-            // const category = localStorage.getItem('category');
             const category = 'teens';
-
-            // Check if question type and category exist
-            if (!questionType || !category) {
-                throw new Error('Question type or category not found in local storage');
-            }
 
             // Fetch questions from the API endpoint
             const response = await fetch('https://sub-engine.fintecgrate.com/api/jgc/questions/retrieve', {
@@ -81,7 +79,6 @@ export default function SpellingBeeQuiz() {
             }
 
             const data = await response.json();
-            console.log(data.data.questions);
             setRandomizedQuestions(data.data.questions);
         } catch (error) {
             console.error('Error fetching questions:', error);
@@ -143,8 +140,8 @@ export default function SpellingBeeQuiz() {
                         <>
                             <div className="w-full flex flex-col gap-6 items-center justify-center">
                                 <h1 className="quiz-text text-lg md:text-3xl font-semibold py-6 text-teal-600">Listen and type what you hear</h1>
-                                <audio controls>
-                                    <source src={randomizedQuestions[currentQuestionIndex].question} type="audio/mp3" />
+                                <audio ref={audioRef} controls>
+                                    <source src={currentQuestion.question} type="audio/mp3" />
                                     Your browser does not support the audio element.
                                 </audio>
                                 <Input
