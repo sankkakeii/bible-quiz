@@ -2,20 +2,33 @@ import { Inter } from "next/font/google";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Instructions() {
     const router = new useRouter();
+    const [toTake, setToTake] = useState('');
+
+
+
+    useEffect(() => {
+        let bible_quiz_login = localStorage.getItem('bible_quiz_login');
+        let bible_quiz_login_object = JSON.parse(bible_quiz_login);
+        setToTake(bible_quiz_login_object.data.data.user.to_take);
+    }, []);
 
 
 
     // Function to handle button(s) click
     const handleQuizClicked = () => {
-        router.push('/quiz/bible-quiz')
+        if (toTake === 'multichoice') {
+            router.push('/quiz/bible-quiz')
+        } else if (toTake === 'audio') {
+            router.push('/quiz/spelling-bee')
+        }
     }
-
 
 
     return (

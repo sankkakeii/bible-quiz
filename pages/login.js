@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,11 @@ export default function Login() {
     const router = useRouter();
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [loginData, setLoginData] = useState({});
+
+    useEffect (() => {
+        localStorage.setItem('bible_quiz_login', loginData);
+    })
 
     const handleLoginClicked = async () => {
         setLoading(true); // Set loading state to true
@@ -35,6 +40,7 @@ export default function Login() {
             }
 
             const responseData = await response.json();
+            setLoginData(JSON.stringify(responseData));
 
             console.log('RESPONSE DATA:::::::::::', responseData)
 
@@ -42,7 +48,7 @@ export default function Login() {
             const token = responseData.data.data.token;
             if (token) {
                 localStorage.setItem('token', token);
-                // router.push('/instructions');
+                router.push('/instructions');
             } else {
                 throw new Error('Token not found in response');
             }
