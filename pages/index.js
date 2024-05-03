@@ -3,120 +3,89 @@ import { useRouter } from 'next/router';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import Link from 'next/link';
 
-export default function Home() {
-  const router = useRouter();
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState(null);
-  const [category, setCategory] = useState(null);
-  const [quizType, setQuizType] = useState('multichoice'); // Default value set to multichoice
+export default function Login() {
+    const router = useRouter();
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [loginData, setLoginData] = useState({});
 
-  const handleNextClicked = async () => {
-    setLoading(true); // Set loading state to true
-    setError(null); // Clear any previous errors
-    setSuccess(null);
+    useEffect (() => {
+        localStorage.setItem('bible_quiz_login', loginData);
+    })
 
-    const name = document.getElementById('fullName').value;
-    const dob = document.getElementById('dob').value;
-    const zone = document.getElementById('areaZone').value;
-    const selectedCategory = document.getElementById('category').value;
-    const quizType = document.getElementById('quizType').value;
+    const handleLoginClicked = async () => {
+        setLoading(true); // Set loading state to true
+        setError(null); // Clear any previous errors
 
-    const data = {
-      name,
-      dob,
-      zone,
-      category: selectedCategory,
-      quizType // Include the selected quiz type in the data
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        const data = {
+            email: username, // Assuming email is used for login based on the provided endpoint payload
+            password
+        };
+
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to login');
+            }
+
+            const responseData = await response.json();
+            setLoginData(JSON.stringify(responseData));
+
+            // console.log('RESPONSE DATA:::::::::::', responseData)
+
+            // Assuming the token is returned in responseData.data.token
+            const token = responseData.data.data.token;
+            if (token) {
+                localStorage.setItem('token', token);
+                router.push('/instructions');
+            } else {
+                throw new Error('Token not found in response');
+            }
+        } catch (error) {
+            console.error(error.message);
+            setError('Failed to login');
+        } finally {
+            setLoading(false); // Set loading state to false regardless of success or failure
+        }
     };
 
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to register');
-      }
-
-      if(response.status === 200) {
-        let dataResponse = await response.json();
-        console.log(dataResponse)
-        setToken(dataResponse.data.data.token);
-        setCategory(dataResponse.data.data.user.category);
-        setSuccess(dataResponse.data.message);
-        router.push('/instructions');
-      }
-    } catch (error) {
-      console.error(error.message);
-      setError('Failed to register');
-    } finally {
-      setLoading(false); // Set loading state to false regardless of success or failure
-    }
-  };
-
-  useEffect (() => {
-    if(token && category) {
-      localStorage.setItem('token', token);
-      localStorage.setItem('category', category);
-    }
-  }, [token, category]);
-
-  console.log(token);
-
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center pt-24" style={{ backgroundImage: 'url(/images/flat-mountains.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-      <div className="flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-20 w-full max-w-screen-lg">
-        <h1 className="text-2xl font-semibold text-teal-600 text-center">Welcome to the Bible Quiz!</h1>
-        <Card className="flex flex-col w-full sm:w-2/3 md:w-1/2 lg:w-1/3 justify-center items-center gap-6 border-none text-center bg-white rounded-lg shadow-xl">
-          <div className="w-full h-32 rounded-t-lg" style={{ backgroundImage: 'url(/images/repeating-chevrons.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}></div>
-          <div className="p-4 md:p-8 w-full flex flex-col gap-3">
-            <div className="text-left">
-              <label>Full Name</label>
-              <Input id="fullName" placeholder="Full Name" className="w-full" />
+    return (
+        <main className="flex min-h-screen flex-col items-center justify-center pt-24" style={{ backgroundImage: 'url(/images/flat-mountains.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+            <div className="flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-20 w-full max-w-screen-lg">
+                <h1 className="text-2xl font-semibold text-teal-600 text-center">Login to Your Account</h1>
+                <Card className="flex flex-col w-full sm:w-2/3 md:w-1/2 lg:w-1/3 justify-center items-center gap-6 border-none text-center bg-white rounded-lg shadow-xl">
+                    <div className="w-full h-32 rounded-t-lg" style={{ backgroundImage: 'url(/images/repeating-chevrons.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}></div>
+                    <div className="p-4 md:p-8 w-full flex flex-col gap-3">
+                        <div className="text-left">
+                            <label>Username</label>
+                            <Input id="username" placeholder="Username" className="w-full" />
+                        </div>
+                        <div className="text-left">
+                            <label>Password</label>
+                            <Input id="password" placeholder="Password" type="password" className="w-full" />
+                        </div>
+                        <Button onClick={handleLoginClicked} className={`login-button bg-green-500 text-white py-4 md:py-6 px-6 md:px-12 rounded-md mt-4 md:mt-8 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <div className="flex items-center w-full justify-center">
+                                {loading ? 'LOADING' : 'LOGIN'}
+                            </div>
+                        </Button>
+                        <Link href="/register" className="text-lg text-zinc-500 underline-offset-4 hover:underline">Register</Link>
+                        {error && <p className="text-red-500">{error}</p>}
+                    </div>
+                </Card>
             </div>
-            <div className="text-left">
-              <label>Date Of Birth</label>
-              <Input id="dob" placeholder="Date Of Birth" type="date" className="w-full" />
-            </div>
-            <div className="text-left">
-              <label>Area/Zone</label>
-              <Input id="areaZone" placeholder="Area/Zone" className="w-full" />
-            </div>
-            <div className="text-left">
-              <label>Category</label>
-              <select id="category" className="w-full p-2 border rounded-md mt-1 border-gray-300 shadow">
-                <option value="9-12">9-12</option>
-                <option value="teens">Teens</option>
-              </select>
-            </div>
-            <div className="text-left">
-              <label>Competition Type</label>
-              <select id="quizType" value={quizType} onChange={(e) => setQuizType(e.target.value)} className="w-full p-2 border rounded-md mt-1 border-gray-300 shadow">
-                <option value="multichoice">Quiz</option>
-                <option value="audio">Spelling Bee</option>
-              </select>
-            </div>
-            <Button onClick={handleNextClicked} className={`next-button bg-green-500 text-white py-4 md:py-6 px-6 md:px-12 rounded-md mt-4 md:mt-8 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-              <div className="flex items-center justify-center w-full">
-                {/* {loading ? <Spinner /> : 'NEXT'} */}
-                {loading ? 'LOADING' : 'NEXT'}
-              </div>
-            </Button>
-            <Link href="/login" className="text-lg text-zinc-500 underline-offset-4 hover:underline">login</Link>
-            {error && <p className="text-red-500">{error}</p>}
-            {success && <p className="text-green-500">{success}</p>}
-          </div>
-        </Card>
-      </div>
-    </main>
-  );
+        </main>
+    );
 }
